@@ -249,67 +249,6 @@ def get_wishlist(user_id):
     finally:
         if cursor: cursor.close()
         if db: db.close()
-# ← nothing after this line inside get_wishlist
-    db = None
-    cursor = None
-    try:
-        db = connect_db(get_dbname())
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("""
-            SELECT notes.id, notes.title, notes.created_at, users.name AS author
-            FROM wishlists
-            JOIN notes ON wishlists.note_id = notes.id
-            JOIN users ON notes.user_id = users.id
-            WHERE wishlists.user_id = %s
-            ORDER BY wishlists.id DESC
-        """, (user_id,))
-        notes = cursor.fetchall()
-        for note in notes:
-            cur2 = db.cursor(dictionary=True)
-            cur2.execute(
-                "SELECT headline, description FROM note_blocks WHERE note_id = %s ORDER BY position ASC",
-                (note["id"],)
-            )
-            note["blocks"] = cur2.fetchall()
-            cur2.close()
-            if note.get("created_at"):
-                note["created_at"] = str(note["created_at"])
-        return {"code": 200, "notes": notes}
-    except Exception as err:
-        print("get_wishlist error:", err)
-        return {"code": 500, "message": str(err)}
-    finally:
-        if cursor: cursor.close()
-        if db: db.close()
-    db = None
-    cursor = None
-    try:
-        db = connect_db(get_dbname())
-        cursor = db.cursor(dictionary=True)
-        cursor.execute("""
-            SELECT notes.id, notes.title, notes.created_at, users.name AS author
-            FROM wishlists
-            JOIN notes ON wishlists.note_id = notes.id
-            JOIN users ON notes.user_id = users.id
-            WHERE wishlists.user_id = %s
-            ORDER BY wishlists.id DESC
-        """, (user_id,))
-        notes = cursor.fetchall()
-        print("Fetched wishlist notes:", notes)  # Debugging log
-        for note in notes:
-            cursor.execute(
-                "SELECT headline, description FROM note_blocks WHERE note_id = %s ORDER BY position ASC",
-                (note["id"],)
-            )
-            note["blocks"] = cursor.fetchall()
-            if note.get("created_at"):
-                note["created_at"] = str(note["created_at"])
-        return {"code": 200, "notes": notes}
-    except Exception as err:
-        return {"code": 500, "message": str(err)}
-    finally:
-        if cursor: cursor.close()
-        if db: db.close()
 
 def delete_note(note_id, user_id):
     db = None
