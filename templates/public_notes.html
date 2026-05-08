@@ -1,0 +1,92 @@
+{% extends "layout.html" %}
+{% block title %}Explore Notes{% endblock %}
+{% block main %}
+<div class="container-fluid notes-page">
+  <div class="notes-hero">
+    <h1>Explore Notes</h1>
+    <p>Discover knowledge shared by the community</p>
+    <div class="search-wrap">
+      <input type="text" placeholder="Search notes..." oninput="searchNotes(this.value)">
+      <span class="search-icon">🔍</span>
+    </div>
+  </div>
+  <div class="stats-bar" id="stats-bar" style="display:none"></div>
+  <div class="notes-grid" id="public-notes-container">
+  </div>
+</div>
+<script>
+  let allPublicNotes = [];
+  async function loadPublicNotes() {
+    const res = await fetch("/get-public-notes");
+    const data = await res.json();
+    if (!data.success) return;
+    allPublicNotes = data.notes;
+    updateStats(allPublicNotes);
+    renderPublicNotes(allPublicNotes);
+  }
+  function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.innerHTML;
+  }
+  function updateStats(notes) {
+    const bar = document.getElementById('stats-bar');
+    bar.style.display = 'flex';
+    bar.innerHTML = `
+    <div class="stat-item"><span>${notes.length}</span>Notes</div>
+    <div class="stat-item"><span>${new Set(notes.map(n => n.author)).size}</span>Authors</div>
+    <div class="stat-item"><span>${notes.reduce((a, n) => a + (n.blocks?.length || 0), 0)}</span>Blocks</div>
+  `;
+  }
+  function renderPublicNotes(notes) {
+    const container = document.getElementById("public-notes-container");
+    container.innerHTML = "";
+    if (!notes.length) {
+      container.innerHTML = `<div class="notes-empty">No notes found</div>`;
+      return;
+    }
+    notes.forEach((note, i) => {
+      const blocks = (note.blocks || []).slice(0, 2).map(b => `
+  <div>
+    <div class="block-headline">${escapeHTML(b.headline)}</div>
+    <div class="block-desc">${escapeHTML(b.description)}</div>
+  </div>
+`).join("");
+
+      container.innerHTML += `
+    <div class="note-card" onclick="openModal(${i})">
+      <div class="d-flex align-items-center justify-content-between">
+        <div class="card-title">${note.title}</div>
+     <button onclick="toggleWishlist(event, ${note.id})"
+  style="background:transparent; border:none; color:#c9965a; cursor:pointer; padding:4px 8px; font-size:1rem;">
+  <i class="fa-solid fa-heart"></i>
+</button>
+      </div>
+      <div class="card-date">${note.created_at || ''}</div>
+      <div class="card-author">
+        <div class="author-avatar">${note.author[0]}</div>
+        <div class="author-name">${note.author}</div>
+        <div class="block-count">${note.blocks.length} blocks</div>
+      </div>
+      ${blocks}
+    </div>`;
+    });
+  }
+
+  function searchNotes(q) {
+    q = q.toLowerCase();
+    renderPublicNotes(
+      allPublicNotes.filter(n =>
+        n.title.toLowerCase().includes(q) ||
+        n.author.toLowerCase().includes(q)
+      )
+    );
+  }
+function toggleWishlist(event, noteId) {
+  event.stopPropagation();
+  window.location.href = `/wishlist-note/${noteId}`;
+}
+
+  loadPublicNotes();
+</script>
+{% endblock %}

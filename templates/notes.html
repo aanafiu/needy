@@ -1,0 +1,192 @@
+{% extends "layout.html" %}
+{% block title %}Notes{% endblock %}
+{% block main %}
+<style>
+  .notes-page { width: 100%; min-height: 80vh; }
+  .notes-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+  }
+  .notes-heading {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800; color: #f0ebe0; letter-spacing: -1px; margin: 0;
+  }
+  .notes-heading span { color: #c9965a; }
+  .btn-add-note {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #c9965a, #a67840);
+    color: #1e1b18; border: none; border-radius: 50px;
+    padding: 12px 24px; font-weight: 700; font-size: 0.9rem;
+    cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 6px 24px rgba(201,150,90,0.35);
+  }
+  .btn-add-note:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(201,150,90,0.5); }
+  .btn-add-note .icon { font-size: 1.1rem; transition: transform 0.3s; }
+  .btn-add-note:hover .icon { transform: rotate(90deg); }
+  #composer {
+    display: none;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 36px;
+    backdrop-filter: blur(10px);
+    animation: slideDown 0.35s cubic-bezier(0.23,1,0.32,1);
+  }
+  #composer.open { display: block; }
+  @keyframes slideDown {
+    from { opacity:0; transform: translateY(-16px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+  .composer-step { display: none; }
+  .composer-step.active { display: flex; flex-direction: column; gap: 16px; }
+  .composer-label {
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 4px;
+  }
+  .composer-input {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.11);
+    border-radius: 14px; padding: 14px 18px;
+    color: #f0ebe0; font-size: 1rem; outline: none; width: 100%;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .composer-input::placeholder { color: rgba(240,235,224,0.25); }
+  .composer-input:focus {
+    border-color: rgba(201,150,90,0.55);
+    background: rgba(255,255,255,0.1);
+  }
+  textarea.composer-input { resize: vertical; min-height: 90px; }
+  .composer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cbtn {
+    border: none; border-radius: 12px; padding: 10px 20px;
+    font-weight: 700; font-size: 0.82rem; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .cbtn-primary { background: linear-gradient(135deg,#c9965a,#a67840); color:#1e1b18; box-shadow: 0 4px 16px rgba(201,150,90,0.3); }
+  .cbtn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,150,90,0.45); }
+  .cbtn-ghost {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.11); color: rgba(240,235,224,0.65);
+  }
+  .cbtn-ghost:hover { background: rgba(255,255,255,0.12); color: #f0ebe0; }
+  .cbtn-success { background: linear-gradient(135deg,#6aab6a,#4a8b4a); color:#f0ebe0; }
+  .cbtn-danger  { background: rgba(201,150,90,0.13); border: 1px solid rgba(201,150,90,0.28); color:#c9965a; }
+  .composer-title-preview {
+    display: none;
+    align-items: center; gap: 10px;
+    padding: 10px 16px;
+    background: rgba(201,150,90,0.1);
+    border: 1px solid rgba(201,150,90,0.22);
+    border-radius: 12px;
+    color: #f0ebe0; font-weight: 700; font-size: 0.95rem;
+  }
+  .composer-title-preview.show { display: flex; }
+  .block-builder {
+    background: rgba(0,0,0,0.2);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 16px; padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .block-builder-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(201,150,90,0.7);
+  }
+  #staged-blocks { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .staged-block {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 16px;
+    animation: fadeSlide 0.3s ease;
+  }
+  @keyframes fadeSlide {
+    from { opacity:0; transform:translateX(-10px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  .staged-block-headline { font-size: 0.85rem; font-weight: 700; color: #f0ebe0; margin-bottom: 4px; }
+  .staged-block-desc { font-size: 0.78rem; color: rgba(240,235,224,0.45); line-height: 1.5; }
+  .block-counter {
+    font-size: 0.72rem; color: rgba(240,235,224,0.3);
+    text-align: right; margin-top: -4px;
+  }
+  .notes-empty {
+    text-align: center; padding: 80px 20px;
+    color: rgba(240,235,224,0.2);
+  }
+  .notes-empty .ei { font-size: 4rem; margin-bottom: 16px; display: block; }
+  .notes-empty p { font-size: 1rem; }
+
+  .notes-page::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(180,130,60,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(160,110,50,0.06) 0%, transparent 55%);
+  }
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(80px); pointer-events: none; z-index: 0;
+    animation: floatOrb var(--dur, 12s) ease-in-out infinite alternate;
+  }
+  .orb-1 { width:400px; height:400px; background:rgba(180,130,60,0.07); top:-100px; left:-100px; --dur:14s; }
+  .orb-2 { width:300px; height:300px; background:rgba(160,110,50,0.05); bottom:0; right:-80px; --dur:10s; }
+  .orb-3 { width:200px; height:200px; background:rgba(201,150,90,0.04); top:50%; left:50%; --dur:16s; }
+  @keyframes floatOrb {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(30px,-40px) scale(1.15); }
+  }
+</style>
+<div class="notes-page">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="notes-topbar">
+    <h1 class="notes-heading">Your <span>Notes</span></h1>
+    <button class="btn-add-note" onclick="toggleComposer(event)"
+      data-user-id="{{ session['user_id'] }}">
+      <span class="icon">+</span> New Note
+    </button>
+  </div>
+  <div id="composer">
+    <div class="composer-step active" id="step-title">
+      <div>
+        <div class="composer-label">Note Title</div>
+        <input type="text" id="note-title" class="composer-input"
+          placeholder="Give your note a title..." autocomplete="off"/>
+      </div>
+      <div class="composer-actions">
+        <button class="cbtn cbtn-primary" onclick="goToBlocks()">Continue →</button>
+        <button class="cbtn cbtn-ghost" onclick="closeComposer()">Cancel</button>
+      </div>
+    </div>
+    <div class="composer-step" id="step-blocks">
+      <div class="composer-title-preview" id="title-preview">
+        <span>📝</span><span id="title-preview-text"></span>
+      </div>
+      <div id="staged-blocks"></div>
+      <div class="block-counter" id="block-counter"></div>
+      <div class="block-builder">
+        <div class="block-builder-label">✦ New Block</div>
+        <div>
+          <div class="composer-label">Headline</div>
+          <input type="text" id="block-headline" class="composer-input"
+            placeholder="Block headline..." autocomplete="off"/>
+        </div>
+        <div>
+          <div class="composer-label">Description</div>
+          <textarea id="block-description" class="composer-input"
+            placeholder="Describe this block..."></textarea>
+        </div>
+        <div class="composer-actions">
+          <button class="cbtn cbtn-ghost" onclick="appendBlock()">+ Add Block</button>
+        </div>
+      </div>
+      <div class="composer-actions" style="margin-top:4px">
+        <button class="cbtn cbtn-success" onclick="saveNote()">💾 Save Note</button>
+        <button class="cbtn cbtn-danger"  onclick="closeComposer()">Discard</button>
+      </div>
+    </div>
+  </div>
+  <div id="notes-list-container"></div>
+</div>
+{% endblock %}

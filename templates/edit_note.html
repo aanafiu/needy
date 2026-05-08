@@ -1,0 +1,261 @@
+{% extends "layout.html" %}
+{% block title %}Edit Note{% endblock %}
+{% block main %}
+<style>
+  .edit-page { width: 100%; min-height: 80vh; position: relative; }
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(80px); pointer-events: none; z-index: 0;
+    animation: floatOrb var(--dur, 12s) ease-in-out infinite alternate;
+  }
+  .orb-1 { width:400px; height:400px; background:rgba(180,130,60,0.07); top:-100px; left:-100px; --dur:14s; }
+  .orb-2 { width:300px; height:300px; background:rgba(160,110,50,0.05); bottom:0; right:-80px; --dur:10s; }
+  .orb-3 { width:200px; height:200px; background:rgba(201,150,90,0.04); top:50%; left:50%; --dur:16s; }
+  @keyframes floatOrb {
+    from { transform: translate(0,0) scale(1); }
+    to   { transform: translate(30px,-40px) scale(1.15); }
+  }
+  .edit-page::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 20%, rgba(180,130,60,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 40% 40% at 80% 80%, rgba(160,110,50,0.06) 0%, transparent 55%);
+  }
+  .edit-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px; flex-wrap: wrap; gap: 12px;
+    position: relative; z-index: 1;
+  }
+  .edit-heading {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    font-weight: 800; color: #f0ebe0; letter-spacing: -1px; margin: 0;
+  }
+  .edit-heading span { color: #c9965a; }
+  .edit-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.09);
+    border-radius: 24px; padding: 32px;
+    backdrop-filter: blur(10px);
+    position: relative; z-index: 1;
+    animation: slideUp 0.4s cubic-bezier(0.23,1,0.32,1);
+  }
+  @keyframes slideUp {
+    from { opacity:0; transform:translateY(20px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  .field-label {
+    font-size: 0.68rem; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: rgba(240,235,224,0.4); margin-bottom: 8px;
+  }
+  .edit-input {
+    background: rgba(255,255,255,0.07);
+    border: 1.5px solid rgba(255,255,255,0.11);
+    border-radius: 14px; padding: 13px 18px;
+    color: #f0ebe0; font-size: 0.95rem; outline: none; width: 100%;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .edit-input::placeholder { color: rgba(240,235,224,0.25); }
+  .edit-input:focus {
+    border-color: rgba(201,150,90,0.55);
+    background: rgba(255,255,255,0.1);
+  }
+  textarea.edit-input { resize: vertical; min-height: 80px; }
+  .title-section { margin-bottom: 28px; }
+  .section-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 24px 0 20px; color: rgba(240,235,224,0.25); font-size: 0.72rem;
+    font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(255,255,255,0.08);
+  }
+  .block-item {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 16px !important;
+    padding: 18px !important;
+    margin-bottom: 14px !important;
+    transition: border-color 0.25s;
+    animation: fadeBlock 0.3s ease;
+  }
+  .block-item:hover { border-color: rgba(201,150,90,0.28) !important; }
+  @keyframes fadeBlock {
+    from { opacity:0; transform:translateX(-8px); }
+    to   { opacity:1; transform:translateX(0); }
+  }
+  .block-num {
+    font-size: 0.65rem; font-weight: 700; letter-spacing: 2px;
+    color: rgba(201,150,90,0.6); text-transform: uppercase; margin-bottom: 10px;
+  }
+  .new-block-area {
+    background: rgba(201,150,90,0.04);
+    border: 1.5px dashed rgba(201,150,90,0.22);
+    border-radius: 16px; padding: 20px;
+    margin-top: 8px; display: none; flex-direction: column; gap: 12px;
+    animation: fadeBlock 0.3s ease;
+  }
+  .new-block-area.open { display: flex; }
+  .btn-add-block {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(201,150,90,0.09);
+    border: 1.5px dashed rgba(201,150,90,0.3);
+    border-radius: 14px; padding: 12px 20px;
+    color: rgba(201,150,90,0.8); font-weight: 700; font-size: 0.85rem;
+    cursor: pointer; width: 100%; justify-content: center;
+    transition: all 0.2s; margin-top: 4px;
+  }
+  .btn-add-block:hover {
+    background: rgba(201,150,90,0.16);
+    border-color: rgba(201,150,90,0.55); color: #c9965a;
+    transform: translateY(-1px);
+  }
+  .btn-add-block .plus { font-size: 1.2rem; transition: transform 0.3s; }
+  .btn-add-block:hover .plus { transform: rotate(90deg); }
+  .edit-footer {
+    display: flex; gap: 12px; flex-wrap: wrap;
+    margin-top: 28px; padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+  }
+  .ebtn {
+    border: none; border-radius: 14px; padding: 13px 28px;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.3px;
+  }
+  .ebtn-save {
+    background: linear-gradient(135deg,#c9965a,#a67840); color:#1e1b18;
+    box-shadow: 0 6px 20px rgba(201,150,90,0.35);
+  }
+  .ebtn-save:hover { transform:translateY(-2px); box-shadow: 0 10px 28px rgba(201,150,90,0.5); }
+  .ebtn-cancel {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.11);
+    color: rgba(240,235,224,0.6); text-decoration: none;
+    display: inline-flex; align-items: center;
+  }
+  .ebtn-cancel:hover { background: rgba(255,255,255,0.12); color: #f0ebe0; }
+  .not-found {
+    text-align: center; padding: 80px 20px;
+    color: rgba(240,235,224,0.2); font-size: 1rem;
+  }
+  .not-found span { font-size: 3rem; display: block; margin-bottom: 12px; }
+</style>
+<div class="edit-page">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="edit-header">
+    <h1 class="edit-heading">Edit <span>Note</span></h1>
+    <a href="/profile" class="ebtn ebtn-cancel">← Back</a>
+  </div>
+  {% if note %}
+  <div class="edit-card">
+    <form action="/updated" method="POST" id="edit-form">
+      <input type="hidden" name="note_id" value="{{ note.id }}">
+      <div class="title-section">
+        <div class="field-label">Note Title</div>
+        <input type="text" class="edit-input" name="title"
+          value="{{ note.title }}" placeholder="Note title..." required>
+      </div>
+      <div class="section-divider">✦ Blocks</div>
+      <div id="blocks-container">
+        {% for block in note.blocks %}
+        <div class="block-item">
+          <div class="block-num">Block {{ loop.index }}</div>
+          <div style="margin-bottom:10px">
+            <div class="field-label">Headline</div>
+            <input type="text" class="edit-input"
+              name="headline_{{ loop.index0 }}"
+              value="{{ block.headline }}" placeholder="Headline">
+          </div>
+          <div>
+            <div class="field-label">Description</div>
+            <textarea class="edit-input"
+              name="description_{{ loop.index0 }}"
+              rows="2">{{ block.description }}</textarea>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="total_blocks" id="total-blocks" value="{{ note.blocks|length }}">
+      <button type="button" class="btn-add-block" onclick="toggleNewBlock()">
+        <span class="plus">+</span> Add New Block
+      </button>
+      <div class="new-block-area" id="new-block-area">
+        <div class="block-num">✦ New Block</div>
+        <div>
+          <div class="field-label">Headline</div>
+          <input type="text" class="edit-input" id="new-headline" placeholder="New headline...">
+        </div>
+        <div>
+          <div class="field-label">Description</div>
+          <textarea class="edit-input" id="new-description" rows="2" placeholder="New description..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px">
+          <button type="button" class="ebtn ebtn-save" style="padding:10px 20px;font-size:0.82rem"
+            onclick="appendNewBlock()">✓ Append Block</button>
+          <button type="button" class="ebtn ebtn-cancel" style="padding:10px 20px;font-size:0.82rem"
+            onclick="toggleNewBlock()">Cancel</button>
+        </div>
+      </div>
+      <div class="edit-footer">
+        <button type="submit" class="ebtn ebtn-save">💾 Save Changes</button>
+        <a href="/profile" class="ebtn ebtn-cancel">Discard</a>
+      </div>
+    </form>
+  </div>
+  {% else %}
+  <div class="not-found"><span>🔍</span>Note not found.</div>
+  {% endif %}
+</div>
+<script>
+  let extraBlockCount = {{ note.blocks|length if note else 0 }};
+
+  function toggleNewBlock() {
+    const area = document.getElementById('new-block-area');
+    area.classList.toggle('open');
+    if (area.classList.contains('open')) {
+      document.getElementById('new-headline').focus();
+    } else {
+      document.getElementById('new-headline').value = '';
+      document.getElementById('new-description').value = '';
+    }
+  }
+
+  function appendNewBlock() {
+    const headline    = document.getElementById('new-headline').value.trim();
+    const description = document.getElementById('new-description').value.trim();
+    if (!headline || !description) {
+      alert('Fill in both headline and description.');
+      return;
+    }
+    const idx = extraBlockCount;
+    const div = document.createElement('div');
+    div.className = 'block-item';
+    div.innerHTML = `
+      <div class="block-num">Block ${idx + 1}</div>
+      <div style="margin-bottom:10px">
+        <div class="field-label">Headline</div>
+        <input type="text" class="edit-input"
+          name="headline_${idx}" value="${headline}" placeholder="Headline">
+      </div>
+      <div>
+        <div class="field-label">Description</div>
+        <textarea class="edit-input" name="description_${idx}"
+          rows="2">${description}</textarea>
+      </div>`;
+    document.getElementById('blocks-container').appendChild(div);
+    extraBlockCount++;
+    document.getElementById('total-blocks').value = extraBlockCount;
+    document.getElementById('new-headline').value = '';
+    document.getElementById('new-description').value = '';
+    document.getElementById('new-block-area').classList.remove('open');
+  }
+
+  document.getElementById('new-headline')
+    .addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('new-description').focus();
+    });
+</script>
+{% endblock %}

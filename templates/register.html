@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Register
+{% endblock %}
+
+{% block main %}
+<div class="container p-0 p-sm-3">
+    <div class="row justify-content-center align-items-center min-vh-50">
+        <div class="col-12 col-sm-10 col-md-10 col-lg-8">
+            <div class="border rounded-3 p-1 p-sm-4 shadow" style="border-color: rgba(201,150,90,0.2) !important; background: rgba(255,255,255,0.03);">
+                <h1 class="text-center h1-color mb-4">Create An Account</h1>
+                <form action="/register" method="post" class="d-flex flex-column gap-3">
+                    <div class="input-group">
+                        <span class="text-warning"><svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                                class="input-group-text bi bi-fonts" viewBox="0 0 16 16">
+                                <path
+                                    d="M12.258 3h-8.51l-.083 2.46h.479c.26-1.544.758-1.783 2.693-1.845l.424-.013v7.827c0 .663-.144.82-1.3.923v.52h4.082v-.52c-1.162-.103-1.306-.26-1.306-.923V3.602l.431.013c1.934.062 2.434.301 2.693 1.846h.479z" />
+                            </svg></span>
+                        <input autocomplete="false" autofocus required type="text" name="name"
+                            class="form-control fs-5 fs-md-4" placeholder="Full Name">
+                    </div>
+                    <div class="input-group">
+                        <span class="text-warning"><svg xmlns="http://www.w3.org" fill="currentColor"
+                                class="input-group-text bi bi-at" viewBox="0 0 16 16">
+                                <path
+                                    d="M13.106 7.222c0-2.967-2.249-5.032-5.477-5.032-3.35 0-5.646 2.318-5.646 5.702 0 3.493 2.235 5.708 5.762 5.708.862 0 1.689-.123 2.304-.335v-.862c-.43.199-1.354.328-2.29.328-2.926 0-4.813-1.88-4.813-4.798 0-2.844 1.921-4.881 4.594-4.881 2.735 0 4.608 1.688 4.608 4.156 0 1.682-.554 2.769-1.416 2.769-.492 0-.772-.28-.772-.76V5.206H8.923v.834h-.11c-.266-.595-.834-1.034-1.713-1.034-1.285 0-2.312 1.15-2.312 2.723 0 1.558 1.027 2.723 2.312 2.723.879 0 1.447-.438 1.713-1.033h.11c.144.595.684 1.033 1.524 1.033 1.45 0 2.29-1.245 2.29-3.266zm-5.283 2.47c-.896 0-1.504-.739-1.504-1.78s.608-1.78 1.504-1.78 1.504.738 1.504 1.78-.608 1.78-1.504 1.78z" />
+                            </svg>
+                        </span>
+                        <input autocomplete="false" autofocus required type="email" name="email"
+                            class="form-control fs-5 fs-md-4" placeholder="Email Address">
+                    </div>
+                    <div class="input-group">
+                        <span class="text-warning"><svg xmlns="http://www.w3.org/2000/svg"
+                                fill="currentColor" class="input-group-text bi bi-braces-asterisk" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M1.114 8.063V7.9c1.005-.102 1.497-.615 1.497-1.6V4.503c0-1.094.39-1.538 1.354-1.538h.273V2h-.376C2.25 2 1.49 2.759 1.49 4.352v1.524c0 1.094-.376 1.456-1.49 1.456v1.299c1.114 0 1.49.362 1.49 1.456v1.524c0 1.593.759 2.352 2.372 2.352h.376v-.964h-.273c-.964 0-1.354-.444-1.354-1.538V9.663c0-.984-.492-1.497-1.497-1.6M14.886 7.9v.164c-1.005.103-1.497.616-1.497 1.6v1.798c0 1.094-.39 1.538-1.354 1.538h-.273v.964h.376c1.613 0 2.372-.759 2.372-2.352v-1.524c0-1.094.376-1.456 1.49-1.456v-1.3c-1.114 0-1.49-.362-1.49-1.456V4.352C14.51 2.759 13.75 2 12.138 2h-.376v.964h.273c.964 0 1.354.444 1.354 1.538V6.3c0 .984.492 1.497 1.497 1.6M7.5 11.5V9.207l-1.621 1.621-.707-.707L6.792 8.5H4.5v-1h2.293L5.172 5.879l.707-.707L7.5 6.792V4.5h1v2.293l1.621-1.621.707.707L9.208 7.5H11.5v1H9.207l1.621 1.621-.707.707L8.5 9.208V11.5z" />
+                            </svg></span>
+                        <input autocomplete="false" required type="password" name="password"
+                            class="form-control ffs-5 fs-md-4" placeholder="Password">
+                    </div>
+                    <button type="submit" class="btn btn-danger w-100">Register</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
