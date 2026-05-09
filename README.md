@@ -1,5 +1,6 @@
 # Needy — Community Note Sharing Platform
 #### Video Demo: https://www.youtube.com/watch?v=j42gokC9tQg
+#### Live Link: https://needy-icim.onrender.com/
 #### Description:
 
 ## What is Needy?
