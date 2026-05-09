@@ -11,15 +11,20 @@ setTimeout(function () {
 }, 3000);
 
 
+function escapeHTML(str) {
+  const div = document.createElement('div');
+  div.appendChild(document.createTextNode(str));
+  return div.innerHTML;
+}
+
+function nl2br(str) {
+  return escapeHTML(str).replace(/\n/g, '<br>');
+}
 
 function openModal(index) {
   const note = allPublicNotes[index];
   if (!note) return;
-  function escapeHTML(str) {
-    const div = document.createElement('div');
-    div.appendChild(document.createTextNode(str));
-    return div.innerHTML;
-  }
+  
   document.getElementById("modal-title").innerText = note.title;
 
   document.getElementById("modal-meta").innerHTML = `
@@ -32,7 +37,7 @@ function openModal(index) {
     html += `
       <div class="modal-block">
         <h4>${block.headline}</h4>
-        <p>${escapeHTML(block.description)}</p>
+        <p>${nl2br(block.description)}</p>
       </div>
     `;
   });

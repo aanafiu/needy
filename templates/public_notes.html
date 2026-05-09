@@ -24,6 +24,9 @@
     updateStats(allPublicNotes);
     renderPublicNotes(allPublicNotes);
   }
+  function nl2br(str) {
+    return escapeHTML(str).replace(/\n/g, '<br>');
+  }
   function escapeHTML(str) {
     const div = document.createElement('div');
     div.appendChild(document.createTextNode(str));
@@ -49,7 +52,7 @@
       const blocks = (note.blocks || []).slice(0, 2).map(b => `
   <div>
     <div class="block-headline">${escapeHTML(b.headline)}</div>
-    <div class="block-desc">${escapeHTML(b.description)}</div>
+    <div class="block-desc">${nl2br(b.description)}</div>
   </div>
 `).join("");
 
@@ -82,10 +85,10 @@
       )
     );
   }
-function toggleWishlist(event, noteId) {
-  event.stopPropagation();
-  window.location.href = `/wishlist-note/${noteId}`;
-}
+  function toggleWishlist(event, noteId) {
+    event.stopPropagation();
+    window.location.href = `/wishlist-note/${noteId}`;
+  }
 
   loadPublicNotes();
 </script>

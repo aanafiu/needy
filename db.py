@@ -7,10 +7,10 @@ load_dotenv()
 
 def connect_db(database=None):
     config = {
-        'host':     os.environ.get('MYSQL_HOST',     'localhost'),
-        'user':     os.environ.get('MYSQL_USER',     'root'),
-        'password': os.environ.get('MYSQL_PASSWORD', ''),
-        'port':     int(os.environ.get('MYSQL_PORT', 3306)),
+        'host':     os.environ.get('MYSQL_HOST'),
+        'user':     os.environ.get('MYSQL_USER'),
+        'password': os.environ.get('MYSQL_PASSWORD'),
+        'port':     int(os.environ.get('MYSQL_PORT')),
     }
     if database:
         config['database'] = database
