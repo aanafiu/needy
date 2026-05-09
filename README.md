@@ -1,5 +1,5 @@
 # Needy — Community Note Sharing Platform
-#### Video Demo: <URL HERE>
+#### Video Demo: https://www.youtube.com/watch?v=j42gokC9tQg
 #### Description:
 
 ## What is Needy?
